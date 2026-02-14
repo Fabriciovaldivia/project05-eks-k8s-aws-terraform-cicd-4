@@ -63,7 +63,7 @@ jobs:
         working-directory: ./terraform
 
       - name: � Actualizar kubeconfig para conectarse a EKS
-        run: aws eks update-kubeconfig --name project03-eks
+        run: aws eks update-kubeconfig --name project05-eks
 
       - name: 🔧 Reemplazar ID de cuenta en manifiestos
         run: sed -i "s|<ACCOUNT_ID>|${{ secrets.AWS_ACCOUNT_ID }}|g" k8s/*.yaml

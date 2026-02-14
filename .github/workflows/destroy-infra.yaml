@@ -22,7 +22,7 @@ jobs:
       - name: 🧹 Limpiar Load Balancers de Kubernetes
         continue-on-error: true # Continúa si el clúster ya no existe o no se puede conectar
         run: |
-          aws eks update-kubeconfig --name project03-eks --region us-east-1
+          aws eks update-kubeconfig --name project05-eks --region us-east-1
           echo "Eliminando servicios LoadBalancer para liberar ENIs..."
           kubectl delete svc --all --namespace default --timeout=10s || echo "No se pudieron eliminar servicios o ya no existen"
           sleep 60 # Espera crítica para que AWS elimine el LB y libere las IPs
