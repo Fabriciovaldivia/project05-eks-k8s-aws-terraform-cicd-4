@@ -1,6 +1,6 @@
 # 🚀 Project05: Despliegue Automático en AWS EKS con Terraform y GitHub Actions
 
-Este proyecto implementa un flujo completo de **DevOps** para desplegar una aplicación web (Flask) en un clúster de Kubernetes (EKS) en AWS. Utiliza **Terraform** para la Infraestructura como Código (IaC) y **GitHub Actions** para la integración y despliegue continuo (CI/CD).
+Este proyecto es una evolución de la arquitectura anterior, reutilizando la base de red y cómputo para implementar capacidades avanzadas de **Observabilidad** y **AIOps**. Despliega una aplicación web (Flask) en AWS EKS utilizando **Terraform** para la infraestructura y los servicios de monitoreo (Helm), y **GitHub Actions** para el CI/CD.
 
 ---
 
@@ -15,6 +15,7 @@ El flujo de trabajo automatizado sigue estos pasos:
 3.  **IaC (Infraestructura):**
     *   GitHub Actions ejecuta **Terraform**.
     *   Terraform provisiona la red (VPC, Subnets, NAT Gateway) y el clúster **EKS**.
+    *   **Terraform (Helm)** despliega automáticamente el stack de monitoreo (**Prometheus/Grafana**) y el operador de IA (**K8sGPT**).
     *   El estado de Terraform se guarda en **S3** y se bloquea con **DynamoDB**.
 4.  **CD (Despliegue Continuo):**
     *   Se actualizan los manifiestos de Kubernetes con el ID de la cuenta AWS.
@@ -49,6 +50,7 @@ project05-eks-k8s-aws-terraform-cicd-4/
 │   │       └── variables.tf # Variables de entrada (CIDR, Name)
 │   ├── backend.tf          # Configuración del backend S3 y DynamoDB (Locking)
 │   ├── monitoring.tf       # Configuración de Prometheus y Grafana (Helm)
+│   ├── ai-ops.tf           # Configuración del Operador de IA (K8sGPT)
 │   ├── main.tf             # Orquestación de módulos (Root Module)
 │   ├── outputs.tf          # Salidas principales del proyecto
 │   └── variables.tf        # Variables globales (Región, Nombre del proyecto)
