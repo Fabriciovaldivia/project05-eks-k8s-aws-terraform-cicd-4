@@ -48,8 +48,8 @@ jobs:
 
       - name: 🛠️ Crear Backend S3 y DynamoDB para Terraform
         run: |
-          aws s3api head-bucket --bucket project03-terraform-state12345 2>/dev/null || aws s3api create-bucket --bucket project03-terraform-state12345 --region us-east-1
-          aws dynamodb describe-table --table-name project03-terraform-lock --region us-east-1 2>/dev/null || aws dynamodb create-table --table-name project03-terraform-lock --attribute-definitions AttributeName=LockID,AttributeType=S --key-schema AttributeName=LockID,KeyType=HASH --provisioned-throughput ReadCapacityUnits=1,WriteCapacityUnits=1 --region us-east-1
+          aws s3api head-bucket --bucket project05-terraform-state-eks 2>/dev/null || aws s3api create-bucket --bucket project05-terraform-state-eks --region us-east-1
+          aws dynamodb describe-table --table-name project05-terraform-lock-eks --region us-east-1 2>/dev/null || aws dynamodb create-table --table-name project05-terraform-lock-eks --attribute-definitions AttributeName=LockID,AttributeType=S --key-schema AttributeName=LockID,KeyType=HASH --provisioned-throughput ReadCapacityUnits=1,WriteCapacityUnits=1 --region us-east-1
 
       - name:  Configurar Terraform
         uses: hashicorp/setup-terraform@v3
