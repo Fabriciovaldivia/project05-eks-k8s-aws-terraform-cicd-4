@@ -128,19 +128,39 @@ Una vez finalizado el pipeline, verifica que la aplicación esté corriendo.
     Copia la dirección que aparece bajo **EXTERNAL-IP** (ej. `a184...us-east-1.elb.amazonaws.com`) y pégala en tu navegador.
 
 ### 3. Acceso a Grafana (Monitoreo)
-El proyecto ahora incluye Prometheus y Grafana. Para acceder al dashboard de Grafana:
+Para acceder al dashboard de Grafana:
 
-1.  Obtén la contraseña del usuario `admin`:
-    ```bash
-    kubectl get secret --namespace monitoring prometheus-community-grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo
-    ```
-2.  Haz port-forwarding para acceder localmente:
+1.  **Obtén la contraseña del usuario `admin`:**
+
+    *   **En Linux/macOS (o Git Bash en Windows):**
+        ```bash
+        kubectl get secret --namespace monitoring prometheus-community-grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo
+        ```
+    *   **En Windows (PowerShell):**
+        ```powershell
+        $secret = kubectl get secret --namespace monitoring prometheus-community-grafana -o jsonpath='{.data.admin-password}'
+        [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($secret))
+        ```
+
+2.  **Crea un túnel de acceso (port-forwarding):**
+    *Mantén esta terminal abierta mientras usas Grafana.*
     ```bash
     kubectl port-forward --namespace monitoring svc/prometheus-community-grafana 3000:80
     ```
-3.  Abre en tu navegador: `http://localhost:3000` (Usuario: `admin`).
+3.  **Entra al dashboard:**
+    Abre en tu navegador: `http://localhost:3000` (Usuario: `admin`, Contraseña: la que obtuviste en el paso 1).
 
-### 4. Diagnóstico con IA (K8sGPT)
+### 4. Acceso a Prometheus (Métricas)
+Para acceder directamente a la interfaz de Prometheus y hacer consultas:
+
+1.  **Crea un túnel de acceso:**
+    ```bash
+    kubectl port-forward --namespace monitoring svc/prometheus-community-prometheus 9090:9090
+    ```
+2.  **Entra a la interfaz:**
+    Abre en tu navegador: `http://localhost:9090`
+
+### 5. Diagnóstico con IA (K8sGPT)
 El proyecto incluye el operador de K8sGPT. Para usar la IA para depurar tu clúster:
 
 1.  **Habilitar el backend de IA (Ejemplo con OpenAI):**
@@ -157,7 +177,7 @@ El proyecto incluye el operador de K8sGPT. Para usar la IA para depurar tu clús
 
 2.  **Ver análisis de IA:**
     ```bash
-    kubectl get results -n k8sgpt-operator-system -o json | jq .
+    kubectl get results -n k8sgpt-operator-system -o json
     ```
     *La IA analizará tus Pods fallidos y te dirá exactamente por qué fallaron y cómo arreglarlos.*
 
