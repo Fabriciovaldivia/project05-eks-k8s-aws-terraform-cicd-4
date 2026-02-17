@@ -15,7 +15,7 @@ El flujo de trabajo automatizado sigue estos pasos:
 3.  **IaC (Infraestructura):**
     *   GitHub Actions ejecuta **Terraform**.
     *   Terraform provisiona la red (VPC, Subnets, NAT Gateway) y el clúster **EKS**.
-    *   **Terraform (Helm)** despliega automáticamente el stack de monitoreo (**Prometheus/Grafana**) y el operador de IA (**K8sGPT** con **Ollama**).
+    *   **Terraform (Helm)** despliega automáticamente el stack de monitoreo (**Prometheus/Grafana**) y el operador de IA (**K8sGPT**).
     *   El estado de Terraform se guarda en **S3** y se bloquea con **DynamoDB**.
 4.  **CD (Despliegue Continuo):**
     *   Se actualizan los manifiestos de Kubernetes con el ID de la cuenta AWS.
@@ -70,7 +70,7 @@ project05-eks-k8s-aws-terraform-cicd-4/
 | **GitHub Actions** | CI/CD | Automatiza todo el proceso desde el `git push` hasta el despliegue. |
 | **S3 + DynamoDB** | Backend Remoto | Guarda el "estado" de la infraestructura para evitar conflictos. |
 | **Prometheus + Grafana** | Monitoreo | Recolección de métricas y visualización de dashboards del clúster. |
-| **K8sGPT + OpenAI** | AIOps | Escanea el clúster y usa `gpt-4o-mini` para diagnosticar errores y proponer soluciones. |
+| **K8sGPT (AIOps)** | Inteligencia Artificial | Escanea el clúster y usa LLMs para diagnosticar errores en lenguaje natural. |
 
 ---
 
@@ -160,78 +160,26 @@ Para acceder directamente a la interfaz de Prometheus y hacer consultas:
 2.  **Entra a la interfaz:**
     Abre en tu navegador: `http://localhost:9090`
 
-### 5. Diagnóstico con IA (K8sGPT + Ollama)
-**Actualización AIOps:** En esta versión, hemos reemplazado la dependencia de OpenAI por **Ollama**. Ahora, el análisis de inteligencia artificial se ejecuta **localmente** dentro de tu clúster EKS usando el modelo `gemma:2b`. Esto garantiza privacidad de datos y cero costos de API.
+### 5. Diagnóstico con IA (K8sGPT)
+El proyecto incluye el operador de K8sGPT. Para usar la IA para depurar tu clúster:
 
-**Flujo de Validación:**
-
-1.  **Verificar que Ollama esté corriendo:**
-    Terraform despliega Ollama automáticamente. Verifica que el pod esté listo (puede tardar en descargar el modelo):
+1.  **Habilitar el backend de IA (Ejemplo con OpenAI):**
     ```bash
-    kubectl get pods -n k8sgpt-operator-system -l app.kubernetes.io/name=ollama
-    ```
-
-2.  **Configurar K8sGPT (Backend Local):**
-    Aplica el manifiesto que conecta K8sGPT con el servicio interno de Ollama:
-    ```bash
+    # Genera una API Key en platform.openai.com
+    export OPENAI_KEY="sk-tu-clave-aqui"
+    
+    # Crea el secreto en el clúster
+    kubectl create secret generic k8sgpt-sample-secret --from-literal=openai-api-key=$OPENAI_KEY -n k8sgpt-operator-system
+    
+    # Aplica la configuración de K8sGPT
     kubectl apply -f k8s/k8sgpt.yaml
     ```
 
-3.  **🧪 Prueba de Fuego (Chaos Testing):**
-    Vamos a romper algo intencionalmente para ver a la IA local en acción.
-
-    *   **Paso A: Crear un error:**
-        ```bash
-        kubectl run prueba-error --image=nginx:tag-inexistente
-        ```
-    *   **Paso B: Esperar análisis:**
-        K8sGPT escanea cada pocos minutos. Puedes ver los resultados con:
-        ```bash
-        kubectl get results -n k8sgpt-operator-system
-        ```
-    *   **Paso C: Leer la explicación de la IA (Comando Universal):**
-        ```bash
-        kubectl get result -n k8sgpt-operator-system -o custom-columns="RECURSO:.metadata.name,DIAGNÓSTICO:.spec.details"
-        ```
-
-    *   **Paso D: Limpieza:**
-        ```bash
-        kubectl delete pod prueba-error
-        ```
-
-    #### Análisis Manual con la CLI de K8sGPT (Alternativo)
-
-    Además del modo Operador automático, puedes realizar análisis manuales bajo demanda usando la CLI de `k8sgpt`. Esto es útil para depuraciones rápidas si tienes un shell dentro del clúster o la CLI instalada localmente.
-
-    **Requisitos:**
-    *   Tener la CLI de `k8sgpt` instalada en tu entorno.
-    *   Tener acceso de red al backend de IA (en este caso, el servicio de Ollama).
-
-    **Ejemplo de uso:**
-
-    Para analizar un tipo de recurso (como los Pods) y obtener una explicación de la IA, usa el flag `--explain`:
-
+2.  **Ver análisis de IA:**
     ```bash
-    # Analiza todos los Pods con problemas y pide una explicación a Ollama
-    k8sgpt analyze --filter Pod --explain --backend openai
+    kubectl get results -n k8sgpt-operator-system -o json
     ```
-
-    **Salida de ejemplo:**
-    ```
-    AI Provider: ollama
-
-    0: Pod default/prueba-error()
-    - Error: Back-off pulling image "nginx:tag-inexistente": ErrImagePull...
-    The error message "ErrImagePull" indicates that Kubernetes could not pull the specified Docker image... To fix this, you should verify the image name and tag...
-    ```
-
-    **Nota sobre los filtros:**
-
-    `k8sGPT` utiliza una lista predefinida de filtros. Si intentas usar un filtro que no existe, como `node`, `cluster` o `svc` (el alias correcto es `Service`), verás una advertencia. Para ver la lista de todos los filtros válidos que puedes usar, ejecuta:
-
-    ```bash
-    k8sgpt filters list
-    ```
+    *La IA analizará tus Pods fallidos y te dirá exactamente por qué fallaron y cómo arreglarlos.*
 
 ---
 
@@ -287,4 +235,4 @@ kubectl describe pod <nombre-del-pod>
 ---
 
 **Autor:** [Tu Nombre]
-**Proyecto:** CloudCamp - Kubernetes & Terraformaaaaa
+**Proyecto:** CloudCamp - Kubernetes & Terraform

@@ -6,12 +6,12 @@ metadata:
 spec:
   ai:
     enabled: true
-    model: gpt-4o-mini
+    model: gpt-3.5-turbo
     backend: openai
     secret:
-      name: openai-secret
-      key: api-key
-  # Explicitly define the repository and version to fix the InvalidImageName error
+      name: k8sgpt-sample-secret
+      key: openai-api-key
+  # Explicitly define the image and tag to fix the InvalidImageName error
   repository: ghcr.io/k8sgpt-ai/k8sgpt
-  version: v0.3.41
-  noCache: true
+  version: v0.3.9
+  noCache: false
