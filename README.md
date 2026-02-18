@@ -102,6 +102,23 @@ git push origin main
 Ve a la pestaña **Actions** en GitHub y verás el flujo `CI-CD-EKS` ejecutándose. Este proceso:
 1.  Creará el repositorio ECR (si no existe).
 2.  Creará el Bucket S3 y la tabla DynamoDB para Terraform (si no existen).
+    > Si prefieres preparar el backend manualmente, asegúrate de crear los recursos antes de ejecutar `terraform init`:
+    > ```bash
+    > # bucket de estado
+    > aws s3api create-bucket \
+    >   --bucket project05-terraform-state-eks \
+    >   --region us-east-1 \
+    >   --create-bucket-configuration LocationConstraint=us-east-1
+    > 
+    > # tabla de bloqueo (opcional si usas use_lockfile en backend.tf)
+    > aws dynamodb create-table \
+    >   --table-name project05-terraform-lock-eks \
+    >   --attribute-definitions AttributeName=LockID,AttributeType=S \
+    >   --key-schema AttributeName=LockID,KeyType=HASH \
+    >   --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5
+    > ```
+    >
+    > Nota: el backend ya no usa `dynamodb_table` (deprecated). en `terraform/backend.tf` se sugiere `use_lockfile = true`.
 3.  Creará el Clúster EKS (tarda aprox. 15 min).
 4.  Desplegará la aplicación.
 
